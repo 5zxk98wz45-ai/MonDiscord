@@ -1,7 +1,7 @@
 // Change cette URL par l'adresse de ton backend une fois déployé (ex: Render)
 const SERVER_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000'
-  : 'https://TON-BACKEND.onrender.com';
+  : 'https://mondiscord.onrender.com';
 
 const socket = io(SERVER_URL);
 
