@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MonDiscord</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="login-screen">
+    <h1>MonDiscord</h1>
+    <input id="pseudo-input" placeholder="Choisis un pseudo" maxlength="20">
+    <button id="join-btn">Rejoindre</button>
+  </div>
+
+  <div id="app" class="hidden">
+    <aside id="sidebar">
+      <h2>En ligne</h2>
+      <ul id="user-list"></ul>
+    </aside>
+
+    <main id="main">
+      <div id="chat-messages"></div>
+      <form id="chat-form">
+        <input id="chat-input" placeholder="Écris un message..." autocomplete="off">
+        <button type="submit">Envoyer</button>
+      </form>
+    </main>
+  </div>
+
+  <!-- Zone d'appel -->
+  <div id="call-panel" class="hidden">
+    <video id="local-video" autoplay muted playsinline></video>
+    <video id="remote-video" autoplay playsinline></video>
+    <button id="hangup-btn">Raccrocher</button>
+  </div>
+
+  <div id="incoming-call" class="hidden">
+    <p id="caller-name"></p>
+    <button id="accept-call-btn">Accepter</button>
+    <button id="reject-call-btn">Refuser</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>
