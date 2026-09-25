@@ -1,347 +1,397 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>MonDiscord</title>
-  <style>
-    * { box-sizing: border-box; font-family: system-ui, sans-serif; }
-    html, body { margin: 0; background: #313338; color: #dcddde; height: 100%; overflow: hidden; }
-    .hidden { display: none !important; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MonDiscord</title>
+<style>
+  * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; }
+  html, body { margin: 0; height: 100%; background: #1e1f22; color: #dbdee1; overflow: hidden; }
+  .hidden { display: none !important; }
+  button { font-family: inherit; }
 
-    #login-screen {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      height: 100vh; gap: 12px; padding: 16px;
-    }
-    #login-screen input, #login-screen button { padding: 12px; border-radius: 6px; border: none; font-size: 16px; width: 240px; }
-    #login-screen button { background: #5865f2; color: white; cursor: pointer; }
+  /* --- Écran de connexion / inscription --- */
+  #auth-screen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100vh; padding: 16px; gap: 14px; text-align: center;
+  }
+  #auth-screen h1 { font-size: 28px; margin-bottom: 4px; background: linear-gradient(90deg,#5865f2,#eb459e);
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #auth-box { background: #2b2d31; padding: 24px; border-radius: 12px; width: 100%; max-width: 320px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+  #auth-box input {
+    width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #1e1f22;
+    background: #1e1f22; color: white; font-size: 16px;
+  }
+  #auth-box button {
+    width: 100%; padding: 12px; border-radius: 8px; border: none; background: #5865f2; color: white;
+    font-weight: 600; cursor: pointer; font-size: 15px; margin-top: 4px;
+  }
+  #auth-toggle { color: #949ba4; font-size: 13px; margin-top: 12px; cursor: pointer; }
+  #auth-toggle b { color: #00a8fc; }
+  #auth-error { color: #f23f42; font-size: 13px; min-height: 18px; }
 
-    #app { display: flex; flex-direction: column; height: 100vh; }
-    #topbar { display: flex; gap: 8px; padding: 10px; background: #2b2d31; align-items: center; }
-    #topbar input { flex: 1; padding: 10px; border-radius: 6px; border: none; background: #1e1f22; color: white; font-size: 16px; min-width: 0; }
-    #add-btn { padding: 10px 14px; border: none; border-radius: 6px; background: #23a55a; color: white; cursor: pointer; white-space: nowrap; }
+  /* --- App principale --- */
+  #app { display: flex; height: 100vh; }
 
-    #body-row { display: flex; flex: 1; min-height: 0; }
-    #sidebar { width: 160px; background: #2b2d31; padding: 12px; overflow-y: auto; flex-shrink: 0; }
-    #sidebar h2 { font-size: 12px; text-transform: uppercase; color: #949ba4; margin: 8px 0 4px; }
-    #user-list, #friend-list { list-style: none; padding: 0; margin: 0; }
-    #user-list li, #friend-list li {
-      padding: 8px; border-radius: 4px; cursor: pointer; margin-bottom: 4px; font-size: 14px;
-      display: flex; align-items: center; gap: 6px; word-break: break-word;
-    }
-    #user-list li:hover, #friend-list li:hover { background: #3a3c41; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .dot.online { background: #23a55a; }
-    .dot.offline { background: #6b6e76; }
+  #channel-rail {
+    width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center;
+    padding-top: 12px; gap: 8px; flex-shrink: 0; overflow-y: auto;
+  }
+  .channel-icon {
+    width: 46px; height: 46px; border-radius: 50%; background: #313338; color: #dbdee1;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;
+    cursor: pointer; transition: border-radius .15s, background .15s; text-transform: uppercase;
+  }
+  .channel-icon:hover { border-radius: 16px; background: #5865f2; }
+  .channel-icon.active { border-radius: 16px; background: #5865f2; }
 
-    #main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-    #chat-messages { flex: 1; overflow-y: auto; padding: 12px; }
-    .msg { margin-bottom: 8px; word-break: break-word; }
-    .msg .pseudo { font-weight: bold; color: #5865f2; margin-right: 6px; }
-    .system-msg { color: #949ba4; font-style: italic; font-size: 13px; }
-    .error-msg { color: #f23f42; font-size: 13px; }
+  #mid-column { width: 200px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; }
+  #channel-title { padding: 14px; font-weight: 700; border-bottom: 1px solid #1e1f22; font-size: 15px; }
+  #user-list-wrap { flex: 1; overflow-y: auto; padding: 10px; }
+  #user-list-wrap h3 { font-size: 11px; text-transform: uppercase; color: #949ba4; margin: 6px 0; }
+  #user-list { list-style: none; padding: 0; margin: 0; }
+  #user-list li { display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 6px; margin-bottom: 2px; font-size: 14px; }
+  #user-list li:hover { background: #35373c; cursor: pointer; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 11px; font-weight: 700; flex-shrink: 0; }
 
-    #chat-form { display: flex; padding: 10px; gap: 8px; background: #383a40; flex-shrink: 0; }
-    #chat-input { flex: 1; padding: 12px; border-radius: 6px; border: none; background: #1e1f22; color: white; font-size: 16px; min-width: 0; }
-    #chat-form button { padding: 10px 16px; border: none; border-radius: 6px; background: #5865f2; color: white; cursor: pointer; }
+  #call-bar { padding: 10px; border-top: 1px solid #1e1f22; }
+  #call-bar button {
+    width: 100%; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px;
+  }
+  #join-call-btn { background: #23a55a; color: white; }
+  #leave-call-btn { background: #da373c; color: white; }
 
-    #call-panel {
-      position: fixed; top: 8px; right: 8px; left: 8px; background: #1e1f22; padding: 10px;
-      border-radius: 8px; z-index: 10; max-width: 260px; margin-left: auto;
-    }
-    #call-panel video { width: 100%; max-width: 220px; border-radius: 6px; margin-bottom: 6px; display: block; background: #000; }
-    #hangup-btn { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; background: #da373c; color: white; }
+  #main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #chat-messages { flex: 1; overflow-y: auto; padding: 14px; }
+  .msg { margin-bottom: 10px; display: flex; gap: 8px; }
+  .msg .avatar { margin-top: 2px; }
+  .msg .content .pseudo { font-weight: 700; font-size: 14px; margin-right: 6px; }
+  .msg .content .text { font-size: 14px; word-break: break-word; }
+  .system-msg { color: #949ba4; font-style: italic; font-size: 13px; margin-bottom: 6px; }
+  .error-msg { color: #f23f42; font-size: 13px; margin-bottom: 6px; }
 
-    #incoming-call {
-      position: fixed; bottom: 12px; left: 8px; right: 8px; background: #1e1f22; padding: 14px;
-      border-radius: 8px; z-index: 20; text-align: center;
-    }
-    #incoming-call p { margin: 0 0 10px; }
-    #incoming-call button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; margin: 0 6px; }
-    #accept-call-btn { background: #23a55a; color: white; }
-    #reject-call-btn { background: #da373c; color: white; }
+  #chat-form { display: flex; gap: 8px; padding: 12px; }
+  #chat-input { flex: 1; padding: 12px 14px; border-radius: 8px; border: none; background: #383a40; color: white; font-size: 16px; min-width: 0; }
+  #chat-form button { padding: 10px 16px; border: none; border-radius: 8px; background: #5865f2; color: white; cursor: pointer; }
 
-    @media (max-width: 480px) {
-      #sidebar { width: 110px; }
-      #topbar input { font-size: 14px; }
-    }
-  </style>
+  /* --- Panneau d'appel de groupe --- */
+  #call-panel {
+    position: fixed; top: 8px; right: 8px; left: 8px; max-width: 420px; margin-left: auto;
+    background: #111214; padding: 10px; border-radius: 12px; z-index: 10; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  }
+  #videos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 6px; margin-bottom: 8px; }
+  #videos-grid video { width: 100%; border-radius: 8px; background: #000; display: block; aspect-ratio: 4/3; object-fit: cover; }
+  #call-panel > button { width: 100%; padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: #da373c; color: white; font-weight: 600; }
+
+  @media (max-width: 560px) {
+    #mid-column { width: 130px; }
+    #channel-rail { width: 56px; }
+    .channel-icon { width: 38px; height: 38px; font-size: 11px; }
+  }
+</style>
 </head>
 <body>
 
-  <div id="login-screen">
+  <div id="auth-screen">
     <h1>MonDiscord</h1>
-    <input id="pseudo-input" placeholder="Choisis un pseudo" maxlength="20">
-    <button id="join-btn">Rejoindre</button>
+    <div id="auth-box">
+      <input id="pseudo-input" placeholder="Pseudo" maxlength="20" autocomplete="username">
+      <input id="password-input" type="password" placeholder="Mot de passe" autocomplete="current-password">
+      <div id="auth-error"></div>
+      <button id="auth-submit-btn">Se connecter</button>
+      <div id="auth-toggle">Pas de compte ? <b>Inscris-toi</b></div>
+    </div>
   </div>
 
   <div id="app" class="hidden">
-    <div id="topbar">
-      <input id="target-input" placeholder="Pseudo à appeler...">
-      <button id="add-btn">Ajouter</button>
+    <div id="channel-rail"></div>
+
+    <div id="mid-column">
+      <div id="channel-title">#général</div>
+      <div id="user-list-wrap">
+        <h3>En ligne — <span id="online-count">0</span></h3>
+        <ul id="user-list"></ul>
+      </div>
+      <div id="call-bar">
+        <button id="join-call-btn">🎙️ Rejoindre l'appel</button>
+        <button id="leave-call-btn" class="hidden">📞 Quitter l'appel</button>
+      </div>
     </div>
 
-    <div id="body-row">
-      <aside id="sidebar">
-        <h2>En ligne</h2>
-        <ul id="user-list"></ul>
-        <h2>Mes contacts</h2>
-        <ul id="friend-list"></ul>
-      </aside>
-
-      <main id="main">
-        <div id="chat-messages"></div>
-        <form id="chat-form">
-          <input id="chat-input" placeholder="Écris un message..." autocomplete="off">
-          <button type="submit">Envoyer</button>
-        </form>
-      </main>
+    <div id="main">
+      <div id="chat-messages"></div>
+      <form id="chat-form">
+        <input id="chat-input" placeholder="Écris un message..." autocomplete="off">
+        <button type="submit">Envoyer</button>
+      </form>
     </div>
   </div>
 
   <div id="call-panel" class="hidden">
-    <video id="local-video" autoplay muted playsinline></video>
-    <video id="remote-video" autoplay playsinline></video>
+    <div id="videos-grid"></div>
     <button id="hangup-btn">Raccrocher</button>
   </div>
 
-  <div id="incoming-call" class="hidden">
-    <p id="caller-name"></p>
-    <button id="accept-call-btn">Accepter</button>
-    <button id="reject-call-btn">Refuser</button>
-  </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+  const SERVER_URL = 'https://mondiscord.onrender.com';
+  const socket = io(SERVER_URL);
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
-  <script>
-    const SERVER_URL = 'https://mondiscord.onrender.com';
-    const socket = io(SERVER_URL);
+  // --- Éléments DOM ---
+  const authScreen = document.getElementById('auth-screen');
+  const pseudoInput = document.getElementById('pseudo-input');
+  const passwordInput = document.getElementById('password-input');
+  const authError = document.getElementById('auth-error');
+  const authSubmitBtn = document.getElementById('auth-submit-btn');
+  const authToggle = document.getElementById('auth-toggle');
 
-    const loginScreen = document.getElementById('login-screen');
-    const app = document.getElementById('app');
-    const pseudoInput = document.getElementById('pseudo-input');
-    const joinBtn = document.getElementById('join-btn');
-    const targetInput = document.getElementById('target-input');
-    const addBtn = document.getElementById('add-btn');
-    const userListEl = document.getElementById('user-list');
-    const friendListEl = document.getElementById('friend-list');
-    const chatMessages = document.getElementById('chat-messages');
-    const chatForm = document.getElementById('chat-form');
-    const chatInput = document.getElementById('chat-input');
-    const callPanel = document.getElementById('call-panel');
-    const localVideo = document.getElementById('local-video');
-    const remoteVideo = document.getElementById('remote-video');
-    const hangupBtn = document.getElementById('hangup-btn');
-    const incomingCallEl = document.getElementById('incoming-call');
-    const callerNameEl = document.getElementById('caller-name');
-    const acceptCallBtn = document.getElementById('accept-call-btn');
-    const rejectCallBtn = document.getElementById('reject-call-btn');
+  const app = document.getElementById('app');
+  const channelRail = document.getElementById('channel-rail');
+  const channelTitle = document.getElementById('channel-title');
+  const userListEl = document.getElementById('user-list');
+  const onlineCountEl = document.getElementById('online-count');
+  const chatMessages = document.getElementById('chat-messages');
+  const chatForm = document.getElementById('chat-form');
+  const chatInput = document.getElementById('chat-input');
 
-    let myPseudo = '';
-    let peerConnection = null;
-    let localStream = null;
-    let currentCallPartner = null;
-    let pendingOffer = null;
-    let onlineUsers = [];
+  const joinCallBtn = document.getElementById('join-call-btn');
+  const leaveCallBtn = document.getElementById('leave-call-btn');
+  const callPanel = document.getElementById('call-panel');
+  const videosGrid = document.getElementById('videos-grid');
+  const hangupBtn = document.getElementById('hangup-btn');
 
-    const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+  let mode = 'login'; // ou 'register'
+  let myPseudo = '';
+  let currentChannel = 'général';
+  let inCall = false;
+  let localStream = null;
+  const peerConnections = {}; // socketId -> RTCPeerConnection
+  const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-    // --- Contacts enregistrés (sauvegardés sur cet appareil) ---
-    function getFriends() {
-      try { return JSON.parse(localStorage.getItem('mondiscord-friends') || '[]'); }
-      catch { return []; }
-    }
-    function saveFriends(list) {
-      localStorage.setItem('mondiscord-friends', JSON.stringify(list));
-    }
-    function addFriend(pseudo) {
-      const list = getFriends();
-      if (!list.includes(pseudo)) { list.push(pseudo); saveFriends(list); }
-      renderFriendList();
-    }
-    function renderFriendList() {
-      friendListEl.innerHTML = '';
-      getFriends().forEach((pseudo) => {
-        if (pseudo === myPseudo) return;
-        const isOnline = onlineUsers.includes(pseudo);
-        const li = document.createElement('li');
-        li.innerHTML = `<span class="dot ${isOnline ? 'online' : 'offline'}"></span>${pseudo}`;
-        li.onclick = () => { if (isOnline) startCall(pseudo); else showSystemMessage(`${pseudo} n'est pas en ligne actuellement.`); };
-        friendListEl.appendChild(li);
-      });
-    }
+  // --- Couleur d'avatar déterministe à partir du pseudo ---
+  function colorFor(pseudo) {
+    let hash = 0;
+    for (let i = 0; i < pseudo.length; i++) hash = pseudo.charCodeAt(i) + ((hash << 5) - hash);
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 60%, 45%)`;
+  }
+  function avatarEl(pseudo) {
+    const div = document.createElement('div');
+    div.className = 'avatar';
+    div.style.background = colorFor(pseudo);
+    div.textContent = pseudo.slice(0, 2).toUpperCase();
+    return div;
+  }
 
-    function showSystemMessage(text, isError) {
-      const div = document.createElement('div');
-      div.className = isError ? 'error-msg' : 'system-msg';
-      div.textContent = text;
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+  // --- Inscription / connexion ---
+  authToggle.onclick = () => {
+    mode = mode === 'login' ? 'register' : 'login';
+    authSubmitBtn.textContent = mode === 'login' ? 'Se connecter' : "S'inscrire";
+    authToggle.innerHTML = mode === 'login'
+      ? "Pas de compte ? <b>Inscris-toi</b>"
+      : "Déjà un compte ? <b>Connecte-toi</b>";
+    authError.textContent = '';
+  };
 
-    // --- Connexion ---
-    joinBtn.onclick = () => {
-      myPseudo = pseudoInput.value.trim();
-      if (!myPseudo) return;
-      socket.emit('join', myPseudo);
-      loginScreen.classList.add('hidden');
+  authSubmitBtn.onclick = () => {
+    const pseudo = pseudoInput.value.trim();
+    const password = passwordInput.value;
+    if (!pseudo || !password) { authError.textContent = 'Remplis les deux champs.'; return; }
+    authError.textContent = '';
+    const event = mode === 'login' ? 'login' : 'register';
+    socket.emit(event, { pseudo, password }, (res) => {
+      if (!res.ok) { authError.textContent = res.error; return; }
+      if (mode === 'register') {
+        authError.style.color = '#23a55a';
+        authError.textContent = 'Compte créé ! Connecte-toi maintenant.';
+        authError.style.color = '#f23f42';
+        mode = 'login';
+        authSubmitBtn.textContent = 'Se connecter';
+        authToggle.innerHTML = "Pas de compte ? <b>Inscris-toi</b>";
+        return;
+      }
+      myPseudo = pseudo;
+      authScreen.classList.add('hidden');
       app.classList.remove('hidden');
-      renderFriendList();
-    };
-    pseudoInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') joinBtn.click(); });
-
-    socket.on('user-list', (list) => {
-      onlineUsers = list;
-      userListEl.innerHTML = '';
-      list.forEach((pseudo) => {
-        if (pseudo === myPseudo) return;
-        const li = document.createElement('li');
-        li.innerHTML = `<span class="dot online"></span>${pseudo}`;
-        li.onclick = () => startCall(pseudo);
-        userListEl.appendChild(li);
-      });
-      renderFriendList();
+      socket.emit('join', { pseudo: myPseudo, channel: currentChannel });
     });
+  };
+  passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') authSubmitBtn.click(); });
 
-    socket.on('system-message', (text) => showSystemMessage(text));
-
-    // --- Appeler un pseudo tapé manuellement (+ l'ajoute aux contacts) ---
-    addBtn.onclick = () => {
-      const target = targetInput.value.trim();
-      if (!target) return;
-      addFriend(target);
-      if (onlineUsers.includes(target)) {
-        startCall(target);
-      } else {
-        showSystemMessage(`${target} a été ajouté à tes contacts, mais n'est pas en ligne actuellement.`);
-      }
-      targetInput.value = '';
-    };
-    targetInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addBtn.click(); });
-
-    // --- Chat texte ---
-    chatForm.onsubmit = (e) => {
-      e.preventDefault();
-      const msg = chatInput.value.trim();
-      if (!msg) return;
-      socket.emit('chat-message', msg);
-      chatInput.value = '';
-    };
-
-    socket.on('chat-message', ({ pseudo, msg }) => {
+  // --- Salons ---
+  socket.on('channels', (list) => {
+    channelRail.innerHTML = '';
+    list.forEach((ch) => {
       const div = document.createElement('div');
-      div.className = 'msg';
-      const pseudoSpan = document.createElement('span');
-      pseudoSpan.className = 'pseudo';
-      pseudoSpan.textContent = pseudo;
-      div.appendChild(pseudoSpan);
-      div.appendChild(document.createTextNode(msg));
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      div.className = 'channel-icon' + (ch === currentChannel ? ' active' : '');
+      div.textContent = ch.slice(0, 2);
+      div.title = ch;
+      div.onclick = () => switchChannel(ch);
+      div.dataset.channel = ch;
+      channelRail.appendChild(div);
     });
+  });
 
-    // --- Appels WebRTC ---
-    async function getLocalMedia() {
+  function switchChannel(ch) {
+    if (ch === currentChannel) return;
+    if (inCall) leaveCall();
+    socket.emit('switch-channel', ch);
+  }
+
+  socket.on('channel-switched', (ch) => {
+    currentChannel = ch;
+    channelTitle.textContent = '#' + ch;
+    chatMessages.innerHTML = '';
+    document.querySelectorAll('.channel-icon').forEach((el) => {
+      el.classList.toggle('active', el.dataset.channel === ch);
+    });
+  });
+
+  // --- Liste des utilisateurs ---
+  socket.on('user-list', (list) => {
+    onlineCountEl.textContent = list.length;
+    userListEl.innerHTML = '';
+    list.forEach((pseudo) => {
+      const li = document.createElement('li');
+      li.appendChild(avatarEl(pseudo));
+      li.appendChild(document.createTextNode(pseudo));
+      userListEl.appendChild(li);
+    });
+  });
+
+  socket.on('system-message', (text) => showMessage(text, 'system-msg'));
+
+  function showMessage(text, cls) {
+    const div = document.createElement('div');
+    div.className = cls;
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // --- Chat ---
+  chatForm.onsubmit = (e) => {
+    e.preventDefault();
+    const msg = chatInput.value.trim();
+    if (!msg) return;
+    socket.emit('chat-message', msg);
+    chatInput.value = '';
+  };
+
+  socket.on('chat-message', ({ pseudo, msg }) => {
+    const div = document.createElement('div');
+    div.className = 'msg';
+    div.appendChild(avatarEl(pseudo));
+    const content = document.createElement('div');
+    content.className = 'content';
+    const p = document.createElement('span'); p.className = 'pseudo'; p.textContent = pseudo;
+    const t = document.createElement('span'); t.className = 'text'; t.textContent = msg;
+    content.appendChild(p); content.appendChild(document.createElement('br')); content.appendChild(t);
+    div.appendChild(content);
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  });
+
+  // --- Appels de groupe (mesh WebRTC) ---
+  async function getLocalMedia() {
+    try { return await navigator.mediaDevices.getUserMedia({ audio: true, video: true }); }
+    catch {
       try {
-        return await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-      } catch (err) {
-        // Sur certains téléphones, la vidéo peut échouer : on retente en audio seul
-        try {
-          showSystemMessage('Caméra indisponible, tentative en audio seul...', true);
-          return await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        } catch (err2) {
-          showSystemMessage("Impossible d'accéder au micro/caméra. Vérifie les autorisations de ton navigateur.", true);
-          throw err2;
-        }
+        showMessage('Caméra indisponible, passage en audio seul.', 'error-msg');
+        return await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      } catch (e) {
+        showMessage("Impossible d'accéder au micro/caméra. Vérifie les autorisations.", 'error-msg');
+        throw e;
       }
     }
+  }
 
-    async function startCall(targetPseudo) {
-      if (peerConnection) { showSystemMessage('Un appel est déjà en cours.', true); return; }
-      currentCallPartner = targetPseudo;
-      try {
-        localStream = await getLocalMedia();
-      } catch { currentCallPartner = null; return; }
-
-      localVideo.srcObject = localStream;
-      callPanel.classList.remove('hidden');
-
-      peerConnection = new RTCPeerConnection(rtcConfig);
-      localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
-      peerConnection.ontrack = (event) => { remoteVideo.srcObject = event.streams[0]; };
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) socket.emit('ice-candidate', { to: currentCallPartner, candidate: event.candidate });
-      };
-      peerConnection.onconnectionstatechange = () => {
-        if (['failed', 'disconnected'].includes(peerConnection.connectionState)) {
-          showSystemMessage('La connexion d\'appel a été perdue.', true);
-          endCall();
-        }
-      };
-
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-      socket.emit('call-user', { to: currentCallPartner, offer });
+  function addVideoTile(id, stream, isLocal) {
+    let video = document.getElementById('video-' + id);
+    if (!video) {
+      video = document.createElement('video');
+      video.id = 'video-' + id;
+      video.autoplay = true; video.playsInline = true;
+      if (isLocal) video.muted = true;
+      videosGrid.appendChild(video);
     }
+    video.srcObject = stream;
+  }
+  function removeVideoTile(id) {
+    const video = document.getElementById('video-' + id);
+    if (video) video.remove();
+  }
 
-    socket.on('incoming-call', ({ from, offer, pseudo }) => {
-      if (peerConnection) { socket.emit('end-call', { to: from }); return; } // déjà en appel
-      pendingOffer = { from, offer };
-      callerNameEl.textContent = `Appel entrant de ${pseudo}`;
-      incomingCallEl.classList.remove('hidden');
-    });
-
-    acceptCallBtn.onclick = async () => {
-      incomingCallEl.classList.add('hidden');
-      currentCallPartner = pendingOffer.from;
-
-      try {
-        localStream = await getLocalMedia();
-      } catch { currentCallPartner = null; pendingOffer = null; return; }
-
-      localVideo.srcObject = localStream;
-      callPanel.classList.remove('hidden');
-
-      peerConnection = new RTCPeerConnection(rtcConfig);
-      localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
-      peerConnection.ontrack = (event) => { remoteVideo.srcObject = event.streams[0]; };
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) socket.emit('ice-candidate', { to: currentCallPartner, candidate: event.candidate });
-      };
-
-      await peerConnection.setRemoteDescription(pendingOffer.offer);
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-      socket.emit('answer-call', { to: currentCallPartner, answer });
-      pendingOffer = null;
+  function createPeerConnection(remoteId) {
+    const pc = new RTCPeerConnection(rtcConfig);
+    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+    pc.ontrack = (event) => addVideoTile(remoteId, event.streams[0], false);
+    pc.onicecandidate = (event) => {
+      if (event.candidate) socket.emit('ice-candidate', { to: remoteId, candidate: event.candidate });
     };
+    peerConnections[remoteId] = pc;
+    return pc;
+  }
 
-    rejectCallBtn.onclick = () => {
-      incomingCallEl.classList.add('hidden');
-      if (pendingOffer) socket.emit('end-call', { to: pendingOffer.from });
-      pendingOffer = null;
-    };
+  joinCallBtn.onclick = async () => {
+    try { localStream = await getLocalMedia(); } catch { return; }
+    inCall = true;
+    callPanel.classList.remove('hidden');
+    joinCallBtn.classList.add('hidden');
+    leaveCallBtn.classList.remove('hidden');
+    addVideoTile('local', localStream, true);
+    socket.emit('join-call');
+  };
 
-    socket.on('call-answered', async ({ answer }) => {
-      if (peerConnection) await peerConnection.setRemoteDescription(answer);
-    });
-
-    socket.on('ice-candidate', async ({ candidate }) => {
-      if (peerConnection) { try { await peerConnection.addIceCandidate(candidate); } catch {} }
-    });
-
-    socket.on('call-ended', () => endCall());
-
-    hangupBtn.onclick = () => {
-      if (currentCallPartner) socket.emit('end-call', { to: currentCallPartner });
-      endCall();
-    };
-
-    function endCall() {
-      if (peerConnection) { peerConnection.close(); peerConnection = null; }
-      if (localStream) { localStream.getTracks().forEach((t) => t.stop()); localStream = null; }
-      callPanel.classList.add('hidden');
-      currentCallPartner = null;
+  socket.on('existing-call-peers', async (peers) => {
+    for (const { id } of peers) {
+      const pc = createPeerConnection(id);
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      socket.emit('call-offer', { to: id, offer });
     }
-  </script>
+  });
+
+  socket.on('call-peer-joined', () => { /* le nouveau venu nous enverra une offre */ });
+
+  socket.on('call-offer', async ({ from, offer }) => {
+    if (!inCall) return; // on n'est pas en appel, on ignore
+    const pc = createPeerConnection(from);
+    await pc.setRemoteDescription(offer);
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    socket.emit('call-answer', { to: from, answer });
+  });
+
+  socket.on('call-answer', async ({ from, answer }) => {
+    const pc = peerConnections[from];
+    if (pc) await pc.setRemoteDescription(answer);
+  });
+
+  socket.on('ice-candidate', async ({ from, candidate }) => {
+    const pc = peerConnections[from];
+    if (pc) { try { await pc.addIceCandidate(candidate); } catch {} }
+  });
+
+  socket.on('call-peer-left', ({ id }) => {
+    if (peerConnections[id]) { peerConnections[id].close(); delete peerConnections[id]; }
+    removeVideoTile(id);
+  });
+
+  function leaveCall() {
+    socket.emit('leave-call');
+    Object.values(peerConnections).forEach((pc) => pc.close());
+    Object.keys(peerConnections).forEach((id) => delete peerConnections[id]);
+    videosGrid.innerHTML = '';
+    if (localStream) { localStream.getTracks().forEach((t) => t.stop()); localStream = null; }
+    inCall = false;
+    callPanel.classList.add('hidden');
+    joinCallBtn.classList.remove('hidden');
+    leaveCallBtn.classList.add('hidden');
+  }
+  leaveCallBtn.onclick = leaveCall;
+  hangupBtn.onclick = leaveCall;
+</script>
 </body>
 </html>
