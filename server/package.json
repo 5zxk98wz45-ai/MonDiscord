@@ -1,7 +1,7 @@
 {
   "name": "discord-clone-server",
   "version": "1.0.0",
-  "description": "Backend chat + signalisation WebRTC (façon Discord)",
+  "description": "Backend chat + comptes + salons + signalisation WebRTC de groupe",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
