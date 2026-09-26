@@ -10,84 +10,92 @@
   .hidden { display: none !important; }
   button { font-family: inherit; }
 
-  /* --- Écran de connexion / inscription --- */
-  #auth-screen {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100vh; padding: 16px; gap: 14px; text-align: center;
-  }
-  #auth-screen h1 { font-size: 28px; margin-bottom: 4px; background: linear-gradient(90deg,#5865f2,#eb459e);
-    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  /* --- Auth --- */
+  #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 16px; gap: 14px; text-align: center; }
+  #auth-screen h1 { font-size: 28px; margin-bottom: 4px; background: linear-gradient(90deg,#5865f2,#eb459e); -webkit-background-clip: text; background-clip: text; color: transparent; }
   #auth-box { background: #2b2d31; padding: 24px; border-radius: 12px; width: 100%; max-width: 320px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
-  #auth-box input {
-    width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #1e1f22;
-    background: #1e1f22; color: white; font-size: 16px;
-  }
-  #auth-box button {
-    width: 100%; padding: 12px; border-radius: 8px; border: none; background: #5865f2; color: white;
-    font-weight: 600; cursor: pointer; font-size: 15px; margin-top: 4px;
-  }
+  #auth-box input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #1e1f22; background: #1e1f22; color: white; font-size: 16px; }
+  #auth-box button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #5865f2; color: white; font-weight: 600; cursor: pointer; font-size: 15px; margin-top: 4px; }
   #auth-toggle { color: #949ba4; font-size: 13px; margin-top: 12px; cursor: pointer; }
   #auth-toggle b { color: #00a8fc; }
   #auth-error { color: #f23f42; font-size: 13px; min-height: 18px; }
 
-  /* --- App principale --- */
+  /* --- App --- */
   #app { display: flex; height: 100vh; }
 
-  #channel-rail {
-    width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center;
-    padding-top: 12px; gap: 8px; flex-shrink: 0; overflow-y: auto;
+  #server-rail { width: 64px; background: #1e1f22; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; flex-shrink: 0; overflow-y: auto; }
+  .server-icon, .add-icon {
+    width: 44px; height: 44px; border-radius: 50%; background: #313338; color: #dbdee1;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;
+    cursor: pointer; transition: border-radius .15s, background .15s; text-transform: uppercase; flex-shrink: 0;
   }
-  .channel-icon {
-    width: 46px; height: 46px; border-radius: 50%; background: #313338; color: #dbdee1;
-    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;
-    cursor: pointer; transition: border-radius .15s, background .15s; text-transform: uppercase;
-  }
-  .channel-icon:hover { border-radius: 16px; background: #5865f2; }
-  .channel-icon.active { border-radius: 16px; background: #5865f2; }
+  .server-icon:hover, .server-icon.active { border-radius: 14px; background: #5865f2; }
+  .add-icon { background: #23a55a; font-size: 20px; }
+  .add-icon:hover { border-radius: 14px; }
 
   #mid-column { width: 200px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; }
-  #channel-title { padding: 14px; font-weight: 700; border-bottom: 1px solid #1e1f22; font-size: 15px; }
-  #user-list-wrap { flex: 1; overflow-y: auto; padding: 10px; }
-  #user-list-wrap h3 { font-size: 11px; text-transform: uppercase; color: #949ba4; margin: 6px 0; }
-  #user-list { list-style: none; padding: 0; margin: 0; }
-  #user-list li { display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 6px; margin-bottom: 2px; font-size: 14px; }
-  #user-list li:hover { background: #35373c; cursor: pointer; }
-  .avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  #server-title { padding: 12px; font-weight: 700; font-size: 14px; border-bottom: 1px solid #1e1f22; }
 
-  #call-bar { padding: 10px; border-top: 1px solid #1e1f22; }
-  #call-bar button {
-    width: 100%; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px;
-  }
+  #channel-list-wrap { padding: 8px; }
+  #channel-list-wrap h3, #contacts-wrap h3 { font-size: 11px; text-transform: uppercase; color: #949ba4; margin: 6px 4px; display: flex; justify-content: space-between; align-items: center; }
+  .small-add-btn { background: none; border: none; color: #949ba4; font-size: 16px; cursor: pointer; padding: 0 4px; }
+  #channel-list { list-style: none; padding: 0; margin: 0; }
+  #channel-list li { padding: 7px 8px; border-radius: 6px; cursor: pointer; font-size: 14px; color: #949ba4; margin-bottom: 2px; }
+  #channel-list li:hover { background: #35373c; color: #dbdee1; }
+  #channel-list li.active { background: #404249; color: white; }
+
+  #user-list-wrap { padding: 8px; overflow-y: auto; flex: 1; min-height: 0; }
+  #user-list { list-style: none; padding: 0; margin: 0; }
+  #user-list li, #contact-list li { display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 6px; margin-bottom: 2px; font-size: 14px; }
+  #contact-list li { cursor: pointer; }
+  #contact-list li:hover { background: #35373c; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-left: auto; }
+  .dot.online { background: #23a55a; } .dot.offline { background: #6b6e76; }
+
+  #contacts-wrap { padding: 8px; border-top: 1px solid #1e1f22; }
+  #add-contact-row { display: flex; gap: 4px; margin-bottom: 6px; }
+  #add-contact-input { flex: 1; padding: 8px; border-radius: 6px; border: none; background: #1e1f22; color: white; font-size: 14px; min-width: 0; }
+  #add-contact-btn { padding: 8px 10px; border: none; border-radius: 6px; background: #5865f2; color: white; cursor: pointer; font-size: 13px; }
+  #contact-list { list-style: none; padding: 0; margin: 0; max-height: 120px; overflow-y: auto; }
+
+  #call-bar { padding: 8px; border-top: 1px solid #1e1f22; }
+  #call-bar button { width: 100%; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; }
   #join-call-btn { background: #23a55a; color: white; }
   #leave-call-btn { background: #da373c; color: white; }
 
   #main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #no-channel { flex: 1; display: flex; align-items: center; justify-content: center; color: #6b6e76; padding: 20px; text-align: center; }
   #chat-messages { flex: 1; overflow-y: auto; padding: 14px; }
   .msg { margin-bottom: 10px; display: flex; gap: 8px; }
-  .msg .avatar { margin-top: 2px; }
   .msg .content .pseudo { font-weight: 700; font-size: 14px; margin-right: 6px; }
   .msg .content .text { font-size: 14px; word-break: break-word; }
   .system-msg { color: #949ba4; font-style: italic; font-size: 13px; margin-bottom: 6px; }
   .error-msg { color: #f23f42; font-size: 13px; margin-bottom: 6px; }
 
-  #chat-form { display: flex; gap: 8px; padding: 12px; }
+  #chat-form { display: flex; gap: 8px; padding: 12px; flex-shrink: 0; }
   #chat-input { flex: 1; padding: 12px 14px; border-radius: 8px; border: none; background: #383a40; color: white; font-size: 16px; min-width: 0; }
   #chat-form button { padding: 10px 16px; border: none; border-radius: 8px; background: #5865f2; color: white; cursor: pointer; }
 
-  /* --- Panneau d'appel de groupe --- */
-  #call-panel {
-    position: fixed; top: 8px; right: 8px; left: 8px; max-width: 420px; margin-left: auto;
-    background: #111214; padding: 10px; border-radius: 12px; z-index: 10; box-shadow: 0 8px 24px rgba(0,0,0,.5);
-  }
+  #call-panel { position: fixed; top: 8px; right: 8px; left: 8px; max-width: 420px; margin-left: auto; background: #111214; padding: 10px; border-radius: 12px; z-index: 10; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
   #videos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 6px; margin-bottom: 8px; }
   #videos-grid video { width: 100%; border-radius: 8px; background: #000; display: block; aspect-ratio: 4/3; object-fit: cover; }
   #call-panel > button { width: 100%; padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: #da373c; color: white; font-weight: 600; }
 
+  /* --- Modales simples --- */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 30; }
+  .modal-box { background: #2b2d31; padding: 20px; border-radius: 10px; width: 260px; }
+  .modal-box h3 { margin: 0 0 10px; font-size: 15px; }
+  .modal-box input { width: 100%; padding: 10px; border-radius: 6px; border: none; background: #1e1f22; color: white; margin-bottom: 10px; font-size: 16px; }
+  .modal-box .row { display: flex; gap: 8px; }
+  .modal-box button { flex: 1; padding: 9px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+  .modal-confirm { background: #5865f2; color: white; }
+  .modal-cancel { background: #4e5058; color: white; }
+
   @media (max-width: 560px) {
     #mid-column { width: 130px; }
-    #channel-rail { width: 56px; }
-    .channel-icon { width: 38px; height: 38px; font-size: 11px; }
+    #server-rail { width: 52px; }
+    .server-icon, .add-icon { width: 36px; height: 36px; font-size: 11px; }
   }
 </style>
 </head>
@@ -105,23 +113,40 @@
   </div>
 
   <div id="app" class="hidden">
-    <div id="channel-rail"></div>
+    <div id="server-rail"></div>
 
     <div id="mid-column">
-      <div id="channel-title">#général</div>
+      <div id="server-title">Choisis ou crée un serveur</div>
+
+      <div id="channel-list-wrap">
+        <h3>Salons <button class="small-add-btn" id="add-channel-btn">＋</button></h3>
+        <ul id="channel-list"></ul>
+      </div>
+
       <div id="user-list-wrap">
-        <h3>En ligne — <span id="online-count">0</span></h3>
+        <h3>En ligne ici</h3>
         <ul id="user-list"></ul>
       </div>
+
+      <div id="contacts-wrap">
+        <h3>Contacts</h3>
+        <div id="add-contact-row">
+          <input id="add-contact-input" placeholder="Pseudo...">
+          <button id="add-contact-btn">Ajouter</button>
+        </div>
+        <ul id="contact-list"></ul>
+      </div>
+
       <div id="call-bar">
-        <button id="join-call-btn">🎙️ Rejoindre l'appel</button>
+        <button id="join-call-btn" class="hidden">🎙️ Rejoindre l'appel</button>
         <button id="leave-call-btn" class="hidden">📞 Quitter l'appel</button>
       </div>
     </div>
 
     <div id="main">
-      <div id="chat-messages"></div>
-      <form id="chat-form">
+      <div id="no-channel">Sélectionne ou crée un serveur, puis un salon, pour discuter.</div>
+      <div id="chat-messages" class="hidden"></div>
+      <form id="chat-form" class="hidden">
         <input id="chat-input" placeholder="Écris un message..." autocomplete="off">
         <button type="submit">Envoyer</button>
       </form>
@@ -133,12 +158,14 @@
     <button id="hangup-btn">Raccrocher</button>
   </div>
 
+  <div id="modal-root"></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
 <script>
   const SERVER_URL = 'https://mondiscord.onrender.com';
   const socket = io(SERVER_URL);
 
-  // --- Éléments DOM ---
+  // --- DOM ---
   const authScreen = document.getElementById('auth-screen');
   const pseudoInput = document.getElementById('pseudo-input');
   const passwordInput = document.getElementById('password-input');
@@ -147,10 +174,16 @@
   const authToggle = document.getElementById('auth-toggle');
 
   const app = document.getElementById('app');
-  const channelRail = document.getElementById('channel-rail');
-  const channelTitle = document.getElementById('channel-title');
+  const serverRail = document.getElementById('server-rail');
+  const serverTitle = document.getElementById('server-title');
+  const channelList = document.getElementById('channel-list');
+  const addChannelBtn = document.getElementById('add-channel-btn');
   const userListEl = document.getElementById('user-list');
-  const onlineCountEl = document.getElementById('online-count');
+  const addContactInput = document.getElementById('add-contact-input');
+  const addContactBtn = document.getElementById('add-contact-btn');
+  const contactListEl = document.getElementById('contact-list');
+
+  const noChannelEl = document.getElementById('no-channel');
   const chatMessages = document.getElementById('chat-messages');
   const chatForm = document.getElementById('chat-form');
   const chatInput = document.getElementById('chat-input');
@@ -160,21 +193,26 @@
   const callPanel = document.getElementById('call-panel');
   const videosGrid = document.getElementById('videos-grid');
   const hangupBtn = document.getElementById('hangup-btn');
+  const modalRoot = document.getElementById('modal-root');
 
-  let mode = 'login'; // ou 'register'
+  let mode = 'login';
   let myPseudo = '';
-  let currentChannel = 'général';
+  let allServers = [];
+  let currentServerId = null;
+  let currentChannelId = null;
   let inCall = false;
   let localStream = null;
-  const peerConnections = {}; // socketId -> RTCPeerConnection
+  const peerConnections = {};       // appel de groupe (mesh) : socketId -> RTCPeerConnection
+  let directPC = null;              // appel direct 1-à-1 avec un contact
+  let directLocalStream = null;
+  let directPartnerId = null;
+  let pendingDirectOffer = null;
   const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-  // --- Couleur d'avatar déterministe à partir du pseudo ---
-  function colorFor(pseudo) {
+  function colorFor(str) {
     let hash = 0;
-    for (let i = 0; i < pseudo.length; i++) hash = pseudo.charCodeAt(i) + ((hash << 5) - hash);
-    const hue = Math.abs(hash) % 360;
-    return `hsl(${hue}, 60%, 45%)`;
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    return `hsl(${Math.abs(hash) % 360}, 60%, 45%)`;
   }
   function avatarEl(pseudo) {
     const div = document.createElement('div');
@@ -183,14 +221,45 @@
     div.textContent = pseudo.slice(0, 2).toUpperCase();
     return div;
   }
+  function showMessage(text, cls) {
+    const div = document.createElement('div');
+    div.className = cls;
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
 
-  // --- Inscription / connexion ---
+  // --- Petite modale texte réutilisable ---
+  function promptModal(title, placeholder, onConfirm) {
+    modalRoot.innerHTML = `
+      <div class="modal-backdrop">
+        <div class="modal-box">
+          <h3>${title}</h3>
+          <input id="modal-input" placeholder="${placeholder}" maxlength="30">
+          <div class="row">
+            <button class="modal-cancel" id="modal-cancel">Annuler</button>
+            <button class="modal-confirm" id="modal-confirm">OK</button>
+          </div>
+        </div>
+      </div>`;
+    const input = document.getElementById('modal-input');
+    input.focus();
+    document.getElementById('modal-cancel').onclick = () => modalRoot.innerHTML = '';
+    const confirm = () => {
+      const val = input.value.trim();
+      if (!val) return;
+      modalRoot.innerHTML = '';
+      onConfirm(val);
+    };
+    document.getElementById('modal-confirm').onclick = confirm;
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirm(); });
+  }
+
+  // --- Auth ---
   authToggle.onclick = () => {
     mode = mode === 'login' ? 'register' : 'login';
     authSubmitBtn.textContent = mode === 'login' ? 'Se connecter' : "S'inscrire";
-    authToggle.innerHTML = mode === 'login'
-      ? "Pas de compte ? <b>Inscris-toi</b>"
-      : "Déjà un compte ? <b>Connecte-toi</b>";
+    authToggle.innerHTML = mode === 'login' ? "Pas de compte ? <b>Inscris-toi</b>" : "Déjà un compte ? <b>Connecte-toi</b>";
     authError.textContent = '';
   };
 
@@ -199,13 +268,12 @@
     const password = passwordInput.value;
     if (!pseudo || !password) { authError.textContent = 'Remplis les deux champs.'; return; }
     authError.textContent = '';
-    const event = mode === 'login' ? 'login' : 'register';
-    socket.emit(event, { pseudo, password }, (res) => {
+    socket.emit(mode, { pseudo, password }, (res) => {
       if (!res.ok) { authError.textContent = res.error; return; }
       if (mode === 'register') {
         authError.style.color = '#23a55a';
         authError.textContent = 'Compte créé ! Connecte-toi maintenant.';
-        authError.style.color = '#f23f42';
+        setTimeout(() => authError.style.color = '#f23f42', 10);
         mode = 'login';
         authSubmitBtn.textContent = 'Se connecter';
         authToggle.innerHTML = "Pas de compte ? <b>Inscris-toi</b>";
@@ -214,43 +282,98 @@
       myPseudo = pseudo;
       authScreen.classList.add('hidden');
       app.classList.remove('hidden');
-      socket.emit('join', { pseudo: myPseudo, channel: currentChannel });
+      socket.emit('join', myPseudo);
+      renderContacts();
     });
   };
   passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') authSubmitBtn.click(); });
 
-  // --- Salons ---
-  socket.on('channels', (list) => {
-    channelRail.innerHTML = '';
-    list.forEach((ch) => {
+  // --- Liste des serveurs ---
+  socket.on('servers-list', (list) => {
+    allServers = list;
+    serverRail.innerHTML = '';
+    list.forEach((s) => {
       const div = document.createElement('div');
-      div.className = 'channel-icon' + (ch === currentChannel ? ' active' : '');
-      div.textContent = ch.slice(0, 2);
-      div.title = ch;
-      div.onclick = () => switchChannel(ch);
-      div.dataset.channel = ch;
-      channelRail.appendChild(div);
+      div.className = 'server-icon' + (s.id === currentServerId ? ' active' : '');
+      div.textContent = s.name.slice(0, 2);
+      div.title = s.name;
+      div.onclick = () => selectServer(s.id);
+      serverRail.appendChild(div);
     });
+    const addDiv = document.createElement('div');
+    addDiv.className = 'add-icon';
+    addDiv.textContent = '+';
+    addDiv.title = 'Créer un serveur';
+    addDiv.onclick = () => promptModal('Créer un serveur', 'Nom du serveur', (name) => {
+      socket.emit('create-server', name, (res) => {
+        if (res.ok) selectServer(res.id);
+      });
+    });
+    serverRail.appendChild(addDiv);
+
+    // Rafraîchit la vue du salon courant si son serveur a changé (ex: nouveau salon ajouté)
+    if (currentServerId) renderChannelList();
   });
 
-  function switchChannel(ch) {
-    if (ch === currentChannel) return;
-    if (inCall) leaveCall();
-    socket.emit('switch-channel', ch);
+  function selectServer(serverId) {
+    currentServerId = serverId;
+    currentChannelId = null;
+    const s = allServers.find((x) => x.id === serverId);
+    serverTitle.textContent = s ? s.name : '';
+    renderChannelList();
+    showNoChannel();
+    document.querySelectorAll('.server-icon').forEach((el, i) => el.classList.toggle('active', allServers[i]?.id === serverId));
   }
 
-  socket.on('channel-switched', (ch) => {
-    currentChannel = ch;
-    channelTitle.textContent = '#' + ch;
-    chatMessages.innerHTML = '';
-    document.querySelectorAll('.channel-icon').forEach((el) => {
-      el.classList.toggle('active', el.dataset.channel === ch);
+  function renderChannelList() {
+    const s = allServers.find((x) => x.id === currentServerId);
+    channelList.innerHTML = '';
+    if (!s) return;
+    s.channels.forEach((c) => {
+      const li = document.createElement('li');
+      li.textContent = '# ' + c.name;
+      li.className = c.id === currentChannelId ? 'active' : '';
+      li.onclick = () => joinChannel(s.id, c.id);
+      channelList.appendChild(li);
     });
+  }
+
+  addChannelBtn.onclick = () => {
+    if (!currentServerId) { showMessage('Choisis ou crée un serveur avant.', 'error-msg'); return; }
+    promptModal('Créer un salon', 'Nom du salon', (name) => {
+      socket.emit('create-channel', { serverId: currentServerId, name }, (res) => {
+        if (!res.ok) alert(res.error);
+      });
+    });
+  };
+
+  function joinChannel(serverId, channelId) {
+    if (inCall) leaveCall();
+    socket.emit('join-channel', { serverId, channelId });
+  }
+
+  socket.on('channel-joined', ({ serverId, channelId }) => {
+    currentServerId = serverId; currentChannelId = channelId;
+    renderChannelList();
+    chatMessages.innerHTML = '';
+    showChannelUI();
   });
 
-  // --- Liste des utilisateurs ---
+  function showNoChannel() {
+    noChannelEl.classList.remove('hidden');
+    chatMessages.classList.add('hidden');
+    chatForm.classList.add('hidden');
+    joinCallBtn.classList.add('hidden');
+    leaveCallBtn.classList.add('hidden');
+  }
+  function showChannelUI() {
+    noChannelEl.classList.add('hidden');
+    chatMessages.classList.remove('hidden');
+    chatForm.classList.remove('hidden');
+    if (!inCall) joinCallBtn.classList.remove('hidden');
+  }
+
   socket.on('user-list', (list) => {
-    onlineCountEl.textContent = list.length;
     userListEl.innerHTML = '';
     list.forEach((pseudo) => {
       const li = document.createElement('li');
@@ -260,16 +383,6 @@
     });
   });
 
-  socket.on('system-message', (text) => showMessage(text, 'system-msg'));
-
-  function showMessage(text, cls) {
-    const div = document.createElement('div');
-    div.className = cls;
-    div.textContent = text;
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-
   // --- Chat ---
   chatForm.onsubmit = (e) => {
     e.preventDefault();
@@ -278,7 +391,6 @@
     socket.emit('chat-message', msg);
     chatInput.value = '';
   };
-
   socket.on('chat-message', ({ pseudo, msg }) => {
     const div = document.createElement('div');
     div.className = 'msg';
@@ -293,43 +405,67 @@
     chatMessages.scrollTop = chatMessages.scrollHeight;
   });
 
-  // --- Appels de groupe (mesh WebRTC) ---
+  // --- Contacts (juste ajoutés, pas d'appel automatique) ---
+  function getContacts() {
+    try { return JSON.parse(localStorage.getItem('mondiscord-contacts') || '[]'); } catch { return []; }
+  }
+  function saveContacts(list) { localStorage.setItem('mondiscord-contacts', JSON.stringify(list)); }
+
+  addContactBtn.onclick = () => {
+    const pseudo = addContactInput.value.trim();
+    if (!pseudo || pseudo === myPseudo) return;
+    const list = getContacts();
+    if (!list.includes(pseudo)) { list.push(pseudo); saveContacts(list); }
+    addContactInput.value = '';
+    renderContacts();
+  };
+  addContactInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addContactBtn.click(); });
+
+  function renderContacts() {
+    const contacts = getContacts();
+    if (contacts.length === 0) { contactListEl.innerHTML = ''; return; }
+    socket.emit('check-online', contacts, (online) => {
+      contactListEl.innerHTML = '';
+      contacts.forEach((pseudo) => {
+        const isOnline = online.includes(pseudo);
+        const li = document.createElement('li');
+        li.appendChild(avatarEl(pseudo));
+        li.appendChild(document.createTextNode(pseudo));
+        const dot = document.createElement('span');
+        dot.className = 'dot ' + (isOnline ? 'online' : 'offline');
+        li.appendChild(dot);
+        li.onclick = () => { if (isOnline) startDirectCall(pseudo); else showMessage(`${pseudo} n'est pas en ligne.`, 'system-msg'); };
+        contactListEl.appendChild(li);
+      });
+    });
+  }
+  setInterval(() => { if (myPseudo) renderContacts(); }, 8000);
+
+  // --- Appel de groupe (mesh) ---
   async function getLocalMedia() {
     try { return await navigator.mediaDevices.getUserMedia({ audio: true, video: true }); }
     catch {
-      try {
-        showMessage('Caméra indisponible, passage en audio seul.', 'error-msg');
-        return await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      } catch (e) {
-        showMessage("Impossible d'accéder au micro/caméra. Vérifie les autorisations.", 'error-msg');
-        throw e;
-      }
+      try { showMessage('Caméra indisponible, audio seul.', 'error-msg'); return await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); }
+      catch (e) { showMessage("Impossible d'accéder au micro/caméra.", 'error-msg'); throw e; }
     }
   }
-
   function addVideoTile(id, stream, isLocal) {
     let video = document.getElementById('video-' + id);
     if (!video) {
       video = document.createElement('video');
-      video.id = 'video-' + id;
-      video.autoplay = true; video.playsInline = true;
+      video.id = 'video-' + id; video.autoplay = true; video.playsInline = true;
       if (isLocal) video.muted = true;
       videosGrid.appendChild(video);
     }
     video.srcObject = stream;
   }
-  function removeVideoTile(id) {
-    const video = document.getElementById('video-' + id);
-    if (video) video.remove();
-  }
+  function removeVideoTile(id) { const v = document.getElementById('video-' + id); if (v) v.remove(); }
 
   function createPeerConnection(remoteId) {
     const pc = new RTCPeerConnection(rtcConfig);
-    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
-    pc.ontrack = (event) => addVideoTile(remoteId, event.streams[0], false);
-    pc.onicecandidate = (event) => {
-      if (event.candidate) socket.emit('ice-candidate', { to: remoteId, candidate: event.candidate });
-    };
+    localStream.getTracks().forEach((t) => pc.addTrack(t, localStream));
+    pc.ontrack = (e) => addVideoTile(remoteId, e.streams[0], false);
+    pc.onicecandidate = (e) => { if (e.candidate) socket.emit('ice-candidate', { to: remoteId, candidate: e.candidate }); };
     peerConnections[remoteId] = pc;
     return pc;
   }
@@ -352,32 +488,17 @@
       socket.emit('call-offer', { to: id, offer });
     }
   });
-
-  socket.on('call-peer-joined', () => { /* le nouveau venu nous enverra une offre */ });
-
   socket.on('call-offer', async ({ from, offer }) => {
-    if (!inCall) return; // on n'est pas en appel, on ignore
+    if (!inCall) return;
     const pc = createPeerConnection(from);
     await pc.setRemoteDescription(offer);
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
     socket.emit('call-answer', { to: from, answer });
   });
-
-  socket.on('call-answer', async ({ from, answer }) => {
-    const pc = peerConnections[from];
-    if (pc) await pc.setRemoteDescription(answer);
-  });
-
-  socket.on('ice-candidate', async ({ from, candidate }) => {
-    const pc = peerConnections[from];
-    if (pc) { try { await pc.addIceCandidate(candidate); } catch {} }
-  });
-
-  socket.on('call-peer-left', ({ id }) => {
-    if (peerConnections[id]) { peerConnections[id].close(); delete peerConnections[id]; }
-    removeVideoTile(id);
-  });
+  socket.on('call-answer', async ({ from, answer }) => { const pc = peerConnections[from]; if (pc) await pc.setRemoteDescription(answer); });
+  socket.on('ice-candidate', async ({ from, candidate }) => { const pc = peerConnections[from]; if (pc) { try { await pc.addIceCandidate(candidate); } catch {} } });
+  socket.on('call-peer-left', ({ id }) => { if (peerConnections[id]) { peerConnections[id].close(); delete peerConnections[id]; } removeVideoTile(id); });
 
   function leaveCall() {
     socket.emit('leave-call');
@@ -387,11 +508,81 @@
     if (localStream) { localStream.getTracks().forEach((t) => t.stop()); localStream = null; }
     inCall = false;
     callPanel.classList.add('hidden');
-    joinCallBtn.classList.remove('hidden');
+    if (currentChannelId) joinCallBtn.classList.remove('hidden');
     leaveCallBtn.classList.add('hidden');
   }
   leaveCallBtn.onclick = leaveCall;
-  hangupBtn.onclick = leaveCall;
+  hangupBtn.onclick = () => { if (inCall) leaveCall(); if (directPC) endDirectCall(); };
+
+  // --- Appel direct 1-à-1 avec un contact ---
+  async function startDirectCall(targetPseudo) {
+    if (directPC || inCall) { showMessage('Un appel est déjà en cours.', 'error-msg'); return; }
+    try { directLocalStream = await getLocalMedia(); } catch { return; }
+    callPanel.classList.remove('hidden');
+    addVideoTile('local', directLocalStream, true);
+
+    directPC = new RTCPeerConnection(rtcConfig);
+    directLocalStream.getTracks().forEach((t) => directPC.addTrack(t, directLocalStream));
+    directPC.ontrack = (e) => addVideoTile('remote', e.streams[0], false);
+    directPC.onicecandidate = (e) => { if (e.candidate) socket.emit('direct-ice-candidate', { to: directPartnerId, candidate: e.candidate }); };
+
+    const offer = await directPC.createOffer();
+    await directPC.setLocalDescription(offer);
+    socket.emit('direct-call-user', { toPseudo: targetPseudo, offer }, (res) => {
+      if (!res || !res.ok) {
+        showMessage(`${targetPseudo} n'est plus en ligne.`, 'error-msg');
+        endDirectCall();
+        return;
+      }
+      directPartnerId = res.targetId;
+    });
+  }
+
+  socket.on('direct-incoming-call', ({ from, offer, pseudo }) => {
+    if (directPC || inCall) { socket.emit('direct-end-call', { to: from }); return; }
+    pendingDirectOffer = { from, offer };
+    modalRoot.innerHTML = `
+      <div class="modal-backdrop">
+        <div class="modal-box">
+          <h3>Appel entrant de ${pseudo}</h3>
+          <div class="row">
+            <button class="modal-cancel" id="reject-direct">Refuser</button>
+            <button class="modal-confirm" id="accept-direct">Accepter</button>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById('reject-direct').onclick = () => { modalRoot.innerHTML = ''; socket.emit('direct-end-call', { to: from }); pendingDirectOffer = null; };
+    document.getElementById('accept-direct').onclick = async () => {
+      modalRoot.innerHTML = '';
+      directPartnerId = from;
+      try { directLocalStream = await getLocalMedia(); } catch { pendingDirectOffer = null; return; }
+      callPanel.classList.remove('hidden');
+      addVideoTile('local', directLocalStream, true);
+
+      directPC = new RTCPeerConnection(rtcConfig);
+      directLocalStream.getTracks().forEach((t) => directPC.addTrack(t, directLocalStream));
+      directPC.ontrack = (e) => addVideoTile('remote', e.streams[0], false);
+      directPC.onicecandidate = (e) => { if (e.candidate) socket.emit('direct-ice-candidate', { to: from, candidate: e.candidate }); };
+
+      await directPC.setRemoteDescription(pendingDirectOffer.offer);
+      const answer = await directPC.createAnswer();
+      await directPC.setLocalDescription(answer);
+      socket.emit('direct-answer-call', { to: from, answer });
+      pendingDirectOffer = null;
+    };
+  });
+  socket.on('direct-call-answered', async ({ from, answer }) => { if (directPC) await directPC.setRemoteDescription(answer); });
+  socket.on('direct-ice-candidate', async ({ candidate }) => { if (directPC) { try { await directPC.addIceCandidate(candidate); } catch {} } });
+  socket.on('direct-call-ended', () => endDirectCall());
+
+  function endDirectCall() {
+    if (directPC) { directPC.close(); directPC = null; }
+    if (directLocalStream) { directLocalStream.getTracks().forEach((t) => t.stop()); directLocalStream = null; }
+    removeVideoTile('remote');
+    if (!inCall) { removeVideoTile('local'); callPanel.classList.add('hidden'); }
+    directPartnerId = null;
+  }
+  hangupBtn.addEventListener('click', () => { if (directPartnerId) socket.emit('direct-end-call', { to: directPartnerId }); });
 </script>
 </body>
 </html>
