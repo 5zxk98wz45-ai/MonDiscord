@@ -49,9 +49,25 @@
   #user-list li, #contact-list li { display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 6px; margin-bottom: 2px; font-size: 14px; }
   #contact-list li { cursor: pointer; }
   #contact-list li:hover { background: #35373c; }
-  .avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 700; flex-shrink: 0; background-position: center; background-size: cover; }
   .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-left: auto; }
   .dot.online { background: #23a55a; } .dot.offline { background: #6b6e76; }
+
+  #my-account { display: flex; align-items: center; gap: 8px; padding: 8px; border-top: 1px solid #1e1f22; cursor: pointer; }
+  #my-account:hover { background: #35373c; }
+  #my-account .avatar { width: 32px; height: 32px; font-size: 13px; }
+  #my-account span { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  #requests-wrap { padding: 6px 8px; }
+  #requests-wrap h3 { font-size: 11px; text-transform: uppercase; color: #949ba4; margin: 6px 4px; }
+  .request-row { display: flex; align-items: center; gap: 6px; padding: 6px; font-size: 13px; background: #35373c; border-radius: 6px; margin-bottom: 4px; }
+  .request-row span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .request-row button { border: none; border-radius: 5px; padding: 4px 7px; font-size: 12px; cursor: pointer; color: white; }
+  .req-accept { background: #23a55a; } .req-decline { background: #da373c; }
+  .pending-tag { font-size: 11px; color: #949ba4; font-style: italic; }
+
+  .profile-avatar-preview { width: 80px; height: 80px; border-radius: 50%; background: #1e1f22; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; background-position: center; background-size: cover; }
+  .modal-box input[type=file] { font-size: 13px; color: #dbdee1; }
 
   #contacts-wrap { padding: 8px; border-top: 1px solid #1e1f22; }
   #add-contact-row { display: flex; gap: 4px; margin-bottom: 6px; }
@@ -128,8 +144,13 @@
         <ul id="user-list"></ul>
       </div>
 
+      <div id="requests-wrap" class="hidden">
+        <h3>Demandes reçues</h3>
+        <div id="request-list"></div>
+      </div>
+
       <div id="contacts-wrap">
-        <h3>Contacts</h3>
+        <h3>Amis</h3>
         <div id="add-contact-row">
           <input id="add-contact-input" placeholder="Pseudo...">
           <button id="add-contact-btn">Ajouter</button>
@@ -140,6 +161,11 @@
       <div id="call-bar">
         <button id="join-call-btn" class="hidden">🎙️ Rejoindre l'appel</button>
         <button id="leave-call-btn" class="hidden">📞 Quitter l'appel</button>
+      </div>
+
+      <div id="my-account">
+        <div class="avatar" id="my-avatar-mini">?</div>
+        <span id="my-account-name"></span>
       </div>
     </div>
 
@@ -182,6 +208,11 @@
   const addContactInput = document.getElementById('add-contact-input');
   const addContactBtn = document.getElementById('add-contact-btn');
   const contactListEl = document.getElementById('contact-list');
+  const requestsWrap = document.getElementById('requests-wrap');
+  const requestListEl = document.getElementById('request-list');
+  const myAccountBtn = document.getElementById('my-account');
+  const myAvatarMini = document.getElementById('my-avatar-mini');
+  const myAccountName = document.getElementById('my-account-name');
 
   const noChannelEl = document.getElementById('no-channel');
   const chatMessages = document.getElementById('chat-messages');
@@ -209,16 +240,47 @@
   let pendingDirectOffer = null;
   const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
+  let myFriendsData = { friends: [], incoming: [], outgoing: [] };
+  let myAvatar = null;
+
   function colorFor(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
     return `hsl(${Math.abs(hash) % 360}, 60%, 45%)`;
   }
+
+  // --- Avatars (photo si dispo, sinon initiales colorées) ---
+  const avatarCache = {};
+  let avatarQueue = new Set();
+  let avatarTimer = null;
+  function cssEscapePseudo(p) { return (window.CSS && CSS.escape) ? CSS.escape(p) : p.replace(/["\\]/g, '\\$&'); }
+  function applyAvatarToDom(pseudo) {
+    const url = avatarCache[pseudo];
+    document.querySelectorAll(`.avatar[data-pseudo="${cssEscapePseudo(pseudo)}"]`).forEach((el) => {
+      if (url) { el.style.backgroundImage = `url(${url})`; el.textContent = ''; }
+      else { el.style.backgroundImage = ''; el.style.background = colorFor(pseudo); el.textContent = pseudo.slice(0, 2).toUpperCase(); }
+    });
+  }
+  function ensureAvatarLoaded(pseudo) {
+    if (pseudo in avatarCache) { applyAvatarToDom(pseudo); return; }
+    avatarQueue.add(pseudo);
+    if (!avatarTimer) {
+      avatarTimer = setTimeout(() => {
+        const list = Array.from(avatarQueue); avatarQueue.clear(); avatarTimer = null;
+        socket.emit('get-avatars', list, (map) => {
+          Object.assign(avatarCache, map || {});
+          list.forEach((p) => applyAvatarToDom(p));
+        });
+      }, 150);
+    }
+  }
   function avatarEl(pseudo) {
     const div = document.createElement('div');
     div.className = 'avatar';
+    div.dataset.pseudo = pseudo;
     div.style.background = colorFor(pseudo);
     div.textContent = pseudo.slice(0, 2).toUpperCase();
+    ensureAvatarLoaded(pseudo);
     return div;
   }
   function showMessage(text, cls) {
@@ -282,11 +344,121 @@
       myPseudo = pseudo;
       authScreen.classList.add('hidden');
       app.classList.remove('hidden');
+      myAccountName.textContent = myPseudo;
       socket.emit('join', myPseudo);
-      renderContacts();
     });
   };
   passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') authSubmitBtn.click(); });
+
+  socket.on('profile', ({ avatar }) => {
+    myAvatar = avatar;
+    avatarCache[myPseudo] = avatar;
+    myAvatarMini.dataset.pseudo = myPseudo;
+    myAvatarMini.className = 'avatar';
+    applyAvatarToDom(myPseudo);
+  });
+
+  socket.on('friends-data', (data) => {
+    myFriendsData = data;
+    renderFriends();
+    renderRequests();
+  });
+
+  socket.on('friend-request-received', ({ from }) => {
+    if (!myFriendsData.incoming.includes(from)) myFriendsData.incoming.push(from);
+    renderRequests();
+    showMessage(`${from} veut t'ajouter en ami.`, 'system-msg');
+  });
+
+  socket.on('friend-request-accepted', ({ by }) => {
+    myFriendsData.outgoing = myFriendsData.outgoing.filter((p) => p !== by);
+    if (!myFriendsData.friends.includes(by)) myFriendsData.friends.push(by);
+    renderFriends();
+    showMessage(`${by} a accepté ta demande d'ami.`, 'system-msg');
+  });
+
+  function renderRequests() {
+    const incoming = myFriendsData.incoming || [];
+    if (incoming.length === 0) { requestsWrap.classList.add('hidden'); requestListEl.innerHTML = ''; return; }
+    requestsWrap.classList.remove('hidden');
+    requestListEl.innerHTML = '';
+    incoming.forEach((pseudo) => {
+      const row = document.createElement('div');
+      row.className = 'request-row';
+      const span = document.createElement('span'); span.textContent = pseudo;
+      const acceptBtn = document.createElement('button'); acceptBtn.className = 'req-accept'; acceptBtn.textContent = '✓';
+      const declineBtn = document.createElement('button'); declineBtn.className = 'req-decline'; declineBtn.textContent = '✕';
+      acceptBtn.onclick = () => socket.emit('accept-friend-request', pseudo, (res) => {
+        if (res.ok) {
+          myFriendsData.incoming = myFriendsData.incoming.filter((p) => p !== pseudo);
+          myFriendsData.friends = res.friends;
+          renderRequests(); renderFriends();
+        }
+      });
+      declineBtn.onclick = () => {
+        socket.emit('decline-friend-request', pseudo);
+        myFriendsData.incoming = myFriendsData.incoming.filter((p) => p !== pseudo);
+        renderRequests();
+      };
+      row.appendChild(span); row.appendChild(acceptBtn); row.appendChild(declineBtn);
+      requestListEl.appendChild(row);
+    });
+  }
+
+  // --- Mon compte / profil ---
+  myAccountBtn.onclick = () => {
+    modalRoot.innerHTML = `
+      <div class="modal-backdrop">
+        <div class="modal-box">
+          <h3>Mon profil — ${myPseudo}</h3>
+          <div class="profile-avatar-preview" id="profile-preview" style="background:${colorFor(myPseudo)}">${myPseudo.slice(0,2).toUpperCase()}</div>
+          <input type="file" id="avatar-file-input" accept="image/*">
+          <div class="row" style="margin-top:10px;">
+            <button class="modal-cancel" id="profile-close">Fermer</button>
+            <button class="modal-confirm" id="profile-save">Enregistrer</button>
+          </div>
+        </div>
+      </div>`;
+    const preview = document.getElementById('profile-preview');
+    if (myAvatar) { preview.style.backgroundImage = `url(${myAvatar})`; preview.style.backgroundSize = 'cover'; preview.textContent = ''; }
+    let newAvatarData = myAvatar;
+    document.getElementById('avatar-file-input').onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const size = 128;
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          const scale = Math.max(size / img.width, size / img.height);
+          const w = img.width * scale, h = img.height * scale;
+          ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+          newAvatarData = canvas.toDataURL('image/jpeg', 0.75);
+          preview.style.backgroundImage = `url(${newAvatarData})`;
+          preview.style.backgroundSize = 'cover';
+          preview.textContent = '';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+    document.getElementById('profile-close').onclick = () => modalRoot.innerHTML = '';
+    document.getElementById('profile-save').onclick = () => {
+      socket.emit('update-avatar', newAvatarData, (res) => {
+        if (res.ok) {
+          myAvatar = newAvatarData;
+          avatarCache[myPseudo] = newAvatarData;
+          applyAvatarToDom(myPseudo);
+          modalRoot.innerHTML = '';
+        } else {
+          alert(res.error || "Erreur lors de l'enregistrement.");
+        }
+      });
+    };
+  };
 
   // --- Liste des serveurs ---
   socket.on('servers-list', (list) => {
@@ -405,41 +577,50 @@
     chatMessages.scrollTop = chatMessages.scrollHeight;
   });
 
-  // --- Contacts (juste ajoutés, pas d'appel automatique) ---
-  function getContacts() {
-    try { return JSON.parse(localStorage.getItem('mondiscord-contacts') || '[]'); } catch { return []; }
-  }
-  function saveContacts(list) { localStorage.setItem('mondiscord-contacts', JSON.stringify(list)); }
-
+  // --- Amis (via le serveur, avec demandes à accepter/refuser) ---
   addContactBtn.onclick = () => {
     const pseudo = addContactInput.value.trim();
-    if (!pseudo || pseudo === myPseudo) return;
-    const list = getContacts();
-    if (!list.includes(pseudo)) { list.push(pseudo); saveContacts(list); }
-    addContactInput.value = '';
-    renderContacts();
+    if (!pseudo) return;
+    socket.emit('send-friend-request', pseudo, (res) => {
+      if (res.ok) {
+        if (!myFriendsData.outgoing.includes(pseudo)) myFriendsData.outgoing.push(pseudo);
+        renderFriends();
+        showMessage(`Demande d'ami envoyée à ${pseudo}.`, 'system-msg');
+        addContactInput.value = '';
+      } else {
+        showMessage(res.error, 'error-msg');
+      }
+    });
   };
   addContactInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addContactBtn.click(); });
 
-  function renderContacts() {
-    const contacts = getContacts();
-    if (contacts.length === 0) { contactListEl.innerHTML = ''; return; }
-    socket.emit('check-online', contacts, (online) => {
+  function renderFriends() {
+    const friends = myFriendsData.friends || [];
+    const outgoing = myFriendsData.outgoing || [];
+    const all = [...friends, ...outgoing.filter((p) => !friends.includes(p))];
+    if (all.length === 0) { contactListEl.innerHTML = ''; return; }
+    socket.emit('check-online', friends, (online) => {
       contactListEl.innerHTML = '';
-      contacts.forEach((pseudo) => {
+      all.forEach((pseudo) => {
+        const isFriend = friends.includes(pseudo);
         const isOnline = online.includes(pseudo);
         const li = document.createElement('li');
         li.appendChild(avatarEl(pseudo));
         li.appendChild(document.createTextNode(pseudo));
-        const dot = document.createElement('span');
-        dot.className = 'dot ' + (isOnline ? 'online' : 'offline');
-        li.appendChild(dot);
-        li.onclick = () => { if (isOnline) startDirectCall(pseudo); else showMessage(`${pseudo} n'est pas en ligne.`, 'system-msg'); };
+        if (!isFriend) {
+          const tag = document.createElement('span'); tag.className = 'pending-tag'; tag.textContent = 'en attente';
+          li.appendChild(tag);
+        } else {
+          const dot = document.createElement('span');
+          dot.className = 'dot ' + (isOnline ? 'online' : 'offline');
+          li.appendChild(dot);
+          li.onclick = () => { if (isOnline) startDirectCall(pseudo); else showMessage(`${pseudo} n'est pas en ligne.`, 'system-msg'); };
+        }
         contactListEl.appendChild(li);
       });
     });
   }
-  setInterval(() => { if (myPseudo) renderContacts(); }, 8000);
+  setInterval(() => { if (myPseudo && myFriendsData.friends.length) renderFriends(); }, 8000);
 
   // --- Appel de groupe (mesh) ---
   async function getLocalMedia() {
