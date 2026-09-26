@@ -14,6 +14,7 @@ app.use(express.static(path.join(__dirname, '..')));
 // --- Fichiers de persistance (voir note de fiabilité dans le README) ---
 const USERS_FILE = path.join(__dirname, 'users.json');
 const SERVERS_FILE = path.join(__dirname, 'servers.json');
+const FRIENDS_FILE = path.join(__dirname, 'friends.json');
 
 function loadJSON(file, fallback) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; }
@@ -27,6 +28,12 @@ function shortId() { return crypto.randomBytes(4).toString('hex'); }
 let users = loadJSON(USERS_FILE, {});
 // servers = { serverId: { name, channels: { channelId: { name } } } }
 let servers = loadJSON(SERVERS_FILE, {});
+// friendsData = { pseudo: { friends: [...], incoming: [...], outgoing: [...] } }
+let friendsData = loadJSON(FRIENDS_FILE, {});
+
+function ensureFriendData(pseudo) {
+  if (!friendsData[pseudo]) friendsData[pseudo] = { friends: [], incoming: [], outgoing: [] };
+}
 
 // socket.id -> { pseudo, serverId, channelId }
 const connected = {};
@@ -74,7 +81,69 @@ io.on('connection', (socket) => {
   socket.on('join', (pseudo) => {
     connected[socket.id] = { pseudo, serverId: null, channelId: null };
     pseudoToSocket[pseudo] = socket.id;
+    ensureFriendData(pseudo);
     socket.emit('servers-list', serversPublicList());
+    socket.emit('friends-data', friendsData[pseudo]);
+    socket.emit('profile', { avatar: users[pseudo]?.avatar || null });
+  });
+
+  // --- Profil : photo de profil ---
+  socket.on('update-avatar', (dataUrl, cb) => {
+    const u = connected[socket.id];
+    if (!u || !users[u.pseudo]) return cb({ ok: false, error: 'Non connecté.' });
+    if (dataUrl && dataUrl.length > 300000) return cb({ ok: false, error: 'Image trop grande.' });
+    users[u.pseudo].avatar = dataUrl || null;
+    saveJSON(USERS_FILE, users);
+    cb({ ok: true });
+  });
+
+  socket.on('get-avatars', (pseudoList, cb) => {
+    const map = {};
+    (pseudoList || []).forEach((p) => { map[p] = users[p]?.avatar || null; });
+    cb(map);
+  });
+
+  // --- Demandes d'ami ---
+  socket.on('send-friend-request', (toPseudo, cb) => {
+    const u = connected[socket.id];
+    if (!u) return cb({ ok: false, error: 'Non connecté.' });
+    const from = u.pseudo;
+    if (toPseudo === from) return cb({ ok: false, error: "Tu ne peux pas t'ajouter toi-même." });
+    if (!users[toPseudo]) return cb({ ok: false, error: "Ce pseudo n'existe pas." });
+    ensureFriendData(from); ensureFriendData(toPseudo);
+    if (friendsData[from].friends.includes(toPseudo)) return cb({ ok: false, error: 'Vous êtes déjà amis.' });
+    if (friendsData[toPseudo].incoming.includes(from)) return cb({ ok: false, error: 'Demande déjà envoyée.' });
+    friendsData[toPseudo].incoming.push(from);
+    if (!friendsData[from].outgoing.includes(toPseudo)) friendsData[from].outgoing.push(toPseudo);
+    saveJSON(FRIENDS_FILE, friendsData);
+    const targetSocket = pseudoToSocket[toPseudo];
+    if (targetSocket) io.to(targetSocket).emit('friend-request-received', { from });
+    cb({ ok: true });
+  });
+
+  socket.on('accept-friend-request', (fromPseudo, cb) => {
+    const u = connected[socket.id];
+    if (!u) return cb({ ok: false });
+    const me = u.pseudo;
+    ensureFriendData(me); ensureFriendData(fromPseudo);
+    friendsData[me].incoming = friendsData[me].incoming.filter((p) => p !== fromPseudo);
+    friendsData[fromPseudo].outgoing = friendsData[fromPseudo].outgoing.filter((p) => p !== me);
+    if (!friendsData[me].friends.includes(fromPseudo)) friendsData[me].friends.push(fromPseudo);
+    if (!friendsData[fromPseudo].friends.includes(me)) friendsData[fromPseudo].friends.push(me);
+    saveJSON(FRIENDS_FILE, friendsData);
+    const targetSocket = pseudoToSocket[fromPseudo];
+    if (targetSocket) io.to(targetSocket).emit('friend-request-accepted', { by: me });
+    cb({ ok: true, friends: friendsData[me].friends });
+  });
+
+  socket.on('decline-friend-request', (fromPseudo) => {
+    const u = connected[socket.id];
+    if (!u) return;
+    const me = u.pseudo;
+    ensureFriendData(me); ensureFriendData(fromPseudo);
+    friendsData[me].incoming = friendsData[me].incoming.filter((p) => p !== fromPseudo);
+    friendsData[fromPseudo].outgoing = friendsData[fromPseudo].outgoing.filter((p) => p !== me);
+    saveJSON(FRIENDS_FILE, friendsData);
   });
 
   // --- Créer un serveur ---
